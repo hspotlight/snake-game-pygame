@@ -13,6 +13,7 @@ snake_body = color.green
 snake_tail = color.blue
 food_color = (111, 111, 111)
 obstacle_color = (255, 115, 0)
+image_path = "./assets/images/"
 
 edge_margin = 10
 edge_size = 10
@@ -20,14 +21,14 @@ screen_margin = edge_margin + edge_size
 
 
 # sprite
-wall = pygame.image.load('./assets/images/wall-36.png')
-background = pygame.image.load('./assets/images/grass-36.png')
-# background = pygame.image.load('plain-36.png')
-food = pygame.image.load('./assets/images/orange-36.png')
-snake_head_icon = pygame.image.load('./assets/images/snake-head-36.png')
-snake_body_line = pygame.image.load('./assets/images/snake-body-line-36.png')
-snake_body_curve = pygame.image.load('./assets/images/snake-body-curve-36.png')
-snake_tail_icon = pygame.image.load('./assets/images/snake-tail-36.png')
+wall = pygame.image.load(os.path.join(image_path, 'wall-36.png'))
+background = pygame.image.load(os.path.join(image_path, 'grass-36.png'))
+# background = pygame.image.load(os.path.join(image_path, 'plain-36.png'))
+food = pygame.image.load(os.path.join(image_path, 'orange-36.png'))
+snake_head_icon = pygame.image.load(os.path.join(image_path, 'snake-head-36.png'))
+snake_body_line = pygame.image.load(os.path.join(image_path, 'snake-body-line-36.png'))
+snake_body_curve = pygame.image.load(os.path.join(image_path, 'snake-body-curve-36.png'))
+snake_tail_icon = pygame.image.load(os.path.join(image_path, 'snake-tail-36.png'))
 
 # block
 block_width = 36
@@ -39,12 +40,8 @@ screen_height = block_height * row_size
 screen = pygame.display.set_mode((screen_width + edge_margin * 4, screen_height + edge_margin * 4))
 pygame.display.set_caption('Hong Snake Project')
 
-all_cell = []
-for x in range(0, col_size):
-    for y in range(0, row_size):
-        all_cell.append([x, y])
 
-
+# render a screen with a screen magin, screen edge, and screen background
 def handle_render_screen(screen_width, screen_height):
     screen.fill(color.black)
     pygame.draw.rect(screen, edge_color, (edge_margin, edge_margin, screen_width + edge_margin * 2, screen_height + edge_margin * 2))
@@ -56,26 +53,24 @@ def handle_render_screen(screen_width, screen_height):
     handle_render_background(all_cell)
 
 
+# render color of a snake
 def handle_render_snake(moving_parts):
     # update head
-    handle_assign_cell(moving_parts[0], 1)
+    handle_assign_cell(moving_parts[0], cell_type_dict['snake'])
     handle_draw_cell(snake_head, moving_parts[0][0], moving_parts[0][1])
     handle_draw_cell(snake_body, moving_parts[1][0], moving_parts[1][1])
 
     # update tail
     if len(moving_parts) > 2:
         handle_draw_cell(snake_tail, moving_parts[2][0], moving_parts[2][1])
-        handle_assign_cell(moving_parts[3], 0)
-
-        # replaced tail position by background color
-        # handle_draw_cell(background_color, moving_parts[3][0], moving_parts[3][1])
-
+        handle_assign_cell(moving_parts[3], cell_type_dict['empty'])
         # replace tail position by background image
         handle_blit_cell(background, moving_parts[3][0], moving_parts[3][1])
 
 
+# render image of a snake
 def handle_render_snake_sprite(snake_position, moving_parts):
-    # head direction
+    # snake head
     head_degree = 0
     if snake_position[0][2] == 'W':
         head_degree = 0
@@ -86,11 +81,11 @@ def handle_render_snake_sprite(snake_position, moving_parts):
     elif snake_position[0][2] == 'D':
         head_degree = -90
 
-    handle_assign_cell(moving_parts[0], 1)
+    handle_assign_cell(moving_parts[0], cell_type_dict['snake'])
     temp = pygame.transform.rotate(snake_head_icon, head_degree)
     handle_blit_cell(temp, moving_parts[0][0], moving_parts[0][1])
-
     
+    # snake body
     if snake_position[0][2] == snake_position[1][2]:
         body_degree = 0
         if snake_position[1][2] == 'W' or snake_position[1][2] == 'S':
@@ -121,9 +116,7 @@ def handle_render_snake_sprite(snake_position, moving_parts):
         temp = pygame.transform.rotate(snake_body_curve, body_degree)
         handle_blit_cell(temp, moving_parts[1][0], moving_parts[1][1])
 
-
-
-    # update tail
+    # snake tail
     if len(moving_parts) > 2:
 
         tail_degree = 0
@@ -138,24 +131,19 @@ def handle_render_snake_sprite(snake_position, moving_parts):
 
         temp = pygame.transform.rotate(snake_tail_icon, tail_degree)
         handle_blit_cell(temp, moving_parts[2][0], moving_parts[2][1])
-        # handle_draw_cell(snake_tail, moving_parts[2][0], moving_parts[2][1])
 
 
-        handle_assign_cell(moving_parts[3], 0)
-
-        # replaced tail position by background color
-        # handle_draw_cell(background_color, moving_parts[3][0], moving_parts[3][1])
-
-        # replace tail position by background image
+        handle_assign_cell(moving_parts[3], cell_type_dict['empty'])
         handle_blit_cell(background, moving_parts[3][0], moving_parts[3][1])
 
 
-
+# render a screen background
 def handle_render_background(all_cell):
     for cell in all_cell:
         handle_blit_cell(background, cell[0], cell[1])
 
 
+# render a obstacles
 def handle_render_obstacle(obstacles):
     for obstacle in obstacles:
         # obstacle in color
@@ -165,6 +153,7 @@ def handle_render_obstacle(obstacles):
         handle_blit_cell(wall, obstacle[0], obstacle[1])
 
 
+# render a food
 def handle_render_food():
     temp = all_cell.copy()
     shuffle(temp)
@@ -174,7 +163,7 @@ def handle_render_food():
             point = cell
 
     if point != None:
-        handle_assign_cell(point, 3)
+        handle_assign_cell(point, cell_type_dict['food'])
         # draw food by color
         # handle_draw_cell(food_color, point[0], point[1])
 
@@ -189,6 +178,7 @@ def handle_blit_cell(image, cell_col, cell_row):
         cell_row * block_height + screen_margin))
 
 
+# fill the cell in the specify XY coordinates
 def handle_draw_cell(color, cell_col, cell_row):
     pygame.draw.rect(screen, color, (
         cell_col * block_width + screen_margin,
@@ -197,16 +187,19 @@ def handle_draw_cell(color, cell_col, cell_row):
         block_height))
 
 
+# assign the value of the grid cell which will be used to check wether the cell is empty of contains a snake, a food, or an obstacle
 def handle_assign_cell(point, value):
     x = point[0]
     y = point[1]
     grid_map[y][x] = value
 
 
+# check wether the given point is out of the screen or not
 def check_in_range(point, col_size, row_size):
     return (0 <= point[0] and point[0] < col_size) and (0 <= point[1] and point[1] < row_size)
 
 
+# handle the object when it is going out the screen by placed it in the another side of the screen
 def handle_object_move_out_screen(point, col_size, row_size):
     x, y, moving_direction = point
     if x < 0:
@@ -221,17 +214,24 @@ def handle_object_move_out_screen(point, col_size, row_size):
     return [x, y, moving_direction]
 
 
+# get the cell by given the specific point
 def get_cell(point):
     return grid_map[point[1]][point[0]]
 
 
 # handle grid
 # each cell represents a object in the grid map
-# 0 = empty
-# 1 = snake
-# 2 = obstacle
-# 3 = food
+cell_type_dict = {
+    'empty': 0,
+    'snake': 1,
+    'obstacle': 2,
+    'food': 3
+}
 grid_map = [[0 for col in range(0, col_size)] for row in range(0, row_size)]
+all_cell = []
+for x in range(0, col_size):
+    for y in range(0, row_size):
+        all_cell.append([x, y])
 
 # construct wall - array of position (x, y) = (col, row)
 obstacles = []
@@ -240,12 +240,12 @@ for x in range(0, col_size):
         if (x == 0 or x == col_size-1) or (y == 0 or y == row_size-1):
             # all bourdary cell
             # obstacles.append([x, y])
-            # handle_assign_cell([x, y], 2)
+            # handle_assign_cell([x, y], cell_type_dict['obstacle'])
 
             # make some hole for moving through the screen
             if (y < row_size/2 -1 or y > row_size/2 + 1):
                 obstacles.append([x, y])
-                handle_assign_cell([x, y], 2)
+                handle_assign_cell([x, y], cell_type_dict['obstacle'])
 
 
 # create a snake
@@ -288,23 +288,21 @@ while running:
     if not check_in_range(snake_head_position, col_size, row_size):
         snake_head_position = handle_object_move_out_screen(snake_head_position, col_size, row_size)
 
+    # get the cell that a snake is moving to
     cell = get_cell(snake_head_position)
 
     remove_tail = True
     drop_food = False
-    if cell == 1: # snake itself
+    if cell == 1: # snake meet itself and goes crash
         running = False
-    elif cell == 2: # obstacle
+    elif cell == 2: # snake hit with an obstacle (a wall)
         running = False
-    elif cell == 3: # food
-        # create new food
+    elif cell == 3: # snake found a food and grow (length longer)
         drop_food = True
         remove_tail = False
 
 
     moving_parts = my_snake.move(snake_head_position, remove_tail)
-    # render snake normal
-    # handle_render_snake(moving_parts)
 
     # render snake with sprite
     handle_render_snake_sprite(my_snake.get_location(), moving_parts)
