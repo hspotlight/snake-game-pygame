@@ -31,6 +31,11 @@ class Snake:
     def set_moving_direction(self, moving_direction):
         self.moving_direction = moving_direction
 
+
+    def get_moving_direction(self):
+        return self.moving_direction
+
+
     # return the moving parts of the snake includes next head, current head, and previous tail
     # output = (head_next, head_prev, tail_next?, tail_prev?)
     def move(self, next_head_position, remove_tail=True):
@@ -46,3 +51,6 @@ class Snake:
 
         self.location.insert(0, head_next)
         return output
+
+    def get_location(self):
+        return self.location
