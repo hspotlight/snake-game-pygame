@@ -4,7 +4,8 @@ class Snake:
         self.moving_direction = moving_direction
         self.location = [point]
         self.initial_length = initial_length
-
+        for i in range(initial_length - 1):
+            self.move(self.get_next_head_position(),False)
 
     # get the next position of the snake according to its moving direction
     # note that this function is only used for peak where the snake is going to
